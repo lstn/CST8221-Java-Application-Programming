@@ -1,5 +1,5 @@
 /**
- * Filename: CalculatorSplashScreen.java
+ * Filename: Calculator.java
  * Author: Lucas Estienne, 040 819 959
  * Course: CST8221 – JAP, Lab Section: 302
  * Assignment: 1
@@ -8,7 +8,6 @@
  * Purpose: Launches the Calculator application. Contains the main method for this program.
  */
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 /**
  * This class is responsible for launching the calculator. Contains the main method.
@@ -20,12 +19,21 @@ import javax.swing.*;
 */
 public class Calculator {
     /**
-     * Text to be displayed on the splash screen. Value: {@value}
+     * Name of the Calculator window. Value: {@value}
      */
     private static final String CALCULATOR_FRAME_TITLE = "Calculator";
+    /**
+     * Width of the initial Calculator frame. Value: {@value}
+     */
     private static final int CALCULATOR_FRAME_WIDTH = 330;
+    /**
+     * Height of the initial Calculator frame. Value: {@value}
+     */
     private static final int CALCULATOR_FRAME_HEIGHT = 400;
-    private static final int SPLASH_SCREEN_DURATION = 200; // set to 5000
+    /**
+     * Duration to display the splash screen for. Value: {@value}
+     */
+    private static final int SPLASH_SCREEN_DURATION = 5000; 
     
     /**
      * Main method for the Calculator application. Creates a splash screen for the application
@@ -59,9 +67,6 @@ public class Calculator {
                 // add CalculatorView to frame
                 CalculatorView calcView = new CalculatorView();
                 calcFrame.add(calcView);
-                // calcFrame.pack();
-                
-                
                 
                 calcFrame.setVisible(true);
             }
