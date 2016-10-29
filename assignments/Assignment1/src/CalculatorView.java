@@ -1,7 +1,7 @@
 /**
  * Filename: CalculatorView.java
  * Author: Lucas Estienne, 040 819 959
- * Course: CST8221 – JAP, Lab Section: 302
+ * Course: CST8221 - JAP, Lab Section: 302
  * Assignment: 1
  * Date: 10/19/2016
  * Professor: Svillen Ranev
@@ -13,6 +13,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import java.nio.charset.StandardCharsets;
 /**
  * This class is responsible for building the Calculator GUI.
  * 
@@ -26,14 +27,17 @@ public class CalculatorView extends JPanel{
      * A 25x25 Dimension object. Value: {@value}
      */
     private static final Dimension DIM_25 = new Dimension(25, 25);
+    
+    private static final String LEFTWARD_ARROW_CHAR = new String("\u2190".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+    private static final String PLUS_MINUS_CHAR = new String("\u00B1".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
     /**
      * Array of the (string) buttons to be displayed in the calculator keypad. Value: {@value}
      */
     private static final String[] KEYPAD_BUTTONS = { 
-        "7", "8", "9", "/",
-        "4", "5", "6", "*",
-        "1", "2", "3", "-",
-        "±", "0", ".", "+"
+        "7",             "8", "9", "/",
+        "4",             "5", "6", "*",
+        "1",             "2", "3", "-",
+        PLUS_MINUS_CHAR, "0", ".", "+"
     };
     /**
      * Array of the (string) radio buttons to be displayed in the calculator modes. Value: {@value}
@@ -102,7 +106,8 @@ public class CalculatorView extends JPanel{
         this.error.setPreferredSize(DIM_25); // size 25x25
         
         // create backspace button
-        JButton backspaceBtn = new JButton("←");
+        
+        JButton backspaceBtn = new JButton(LEFTWARD_ARROW_CHAR);
         backspaceBtn.setForeground(Color.RED);
         backspaceBtn.setBackground(Color.RED);
         backspaceBtn.setBorder(new LineBorder(Color.RED));
@@ -210,26 +215,50 @@ public class CalculatorView extends JPanel{
         return keypadContainer;
     }
     
+    /**
+     * This method builds the GUI for the bottom (keypad) portion of the calculator GUI.
+     * 
+     * @param text String button text
+     * @param ac String action command for the button
+     * @param fg Color foreground color for the button
+     * @param bg Color background color for the button
+     * @param handler ActionLister handler for the buttons in this frame.
+     * @return JButton the button created by this method
+    */
     private JButton createButton(String text, String ac, Color fg, Color bg, ActionListener handler){
-        JButton createdButton = new JButton(text);
+        JButton createdButton = new JButton(text); // create button
         
+        // set back and foregrounds
         createdButton.setBackground(bg);
         createdButton.setForeground(fg);
         
-        if (ac != null){ createdButton.setActionCommand(ac); }
+        if (ac != null){ createdButton.setActionCommand(ac); } // only set ation command if ac is not null
         
-        createdButton.setFont(createdButton.getFont().deriveFont(20.0f));
+        createdButton.setFont(createdButton.getFont().deriveFont(20.0f)); // increase font size to 20
         createdButton.addActionListener(handler);
         
         return createdButton;
     }
     
+    /**
+    * This class implements an ActionListener controller.
+    * 
+    * @author Lucas Estienne
+    * @version 1.0
+    * @see java.awt.event.ActionListener
+    * @since 1.8.0_112
+    */
     private class Controller implements ActionListener {
         
+        /**
+        * Overrides ActionListener.actionPerformed(), sets calculator display text to action string.
+        * 
+        * @param e ActionEvent that has occurred
+        */
         @Override
         public void actionPerformed(ActionEvent e) { 
-            String ac = e.getActionCommand();
-            display.setText(ac);
+            String ac = e.getActionCommand(); // get action string
+            display.setText(ac); // set the display
         }
     }
 }

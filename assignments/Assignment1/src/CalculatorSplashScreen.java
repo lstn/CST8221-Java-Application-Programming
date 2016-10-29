@@ -1,7 +1,7 @@
 /**
  * Filename: CalculatorSplashScreen.java
  * Author: Lucas Estienne, 040 819 959
- * Course: CST8221 – JAP, Lab Section: 302
+ * Course: CST8221 - JAP, Lab Section: 302
  * Assignment: 1
  * Date: 10/18/2016
  * Professor: Svillen Ranev

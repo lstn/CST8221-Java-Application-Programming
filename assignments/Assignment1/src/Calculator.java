@@ -1,7 +1,7 @@
 /**
  * Filename: Calculator.java
  * Author: Lucas Estienne, 040 819 959
- * Course: CST8221 – JAP, Lab Section: 302
+ * Course: CST8221 - JAP, Lab Section: 302
  * Assignment: 1
  * Date: 10/19/2016
  * Professor: Svillen Ranev
@@ -31,6 +31,10 @@ public class Calculator {
      */
     private static final int CALCULATOR_FRAME_HEIGHT = 400;
     /**
+     * Dimensions of the initial Calculator frame. Value: {@value}
+     */
+    private static final Dimension CALCULATOR_FRAME_DIMENSION = new Dimension(CALCULATOR_FRAME_WIDTH, CALCULATOR_FRAME_HEIGHT);
+    /**
      * Duration to display the splash screen for. Value: {@value}
      */
     private static final int SPLASH_SCREEN_DURATION = 5000; 
@@ -55,7 +59,8 @@ public class Calculator {
                 // create frame
                 JFrame calcFrame = new JFrame();
                 calcFrame.setTitle(CALCULATOR_FRAME_TITLE);
-                calcFrame.setSize(CALCULATOR_FRAME_WIDTH, CALCULATOR_FRAME_HEIGHT);
+                calcFrame.setSize(CALCULATOR_FRAME_DIMENSION);
+                calcFrame.setMinimumSize(CALCULATOR_FRAME_DIMENSION);
                 calcFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // set up close button 
                 
                 // set frame location
