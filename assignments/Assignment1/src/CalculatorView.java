@@ -27,8 +27,13 @@ public class CalculatorView extends JPanel{
      * A 25x25 Dimension object. Value: {@value}
      */
     private static final Dimension DIM_25 = new Dimension(25, 25);
-    
+    /**
+     * String representing the LEFTWARD_ARROW character. Value: {@value}
+     */
     private static final String LEFTWARD_ARROW_CHAR = new String("\u2190".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+    /**
+     * String representing the PLUSMINUS character. Value: {@value}
+     */
     private static final String PLUS_MINUS_CHAR = new String("\u00B1".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
     /**
      * Array of the (string) buttons to be displayed in the calculator keypad. Value: {@value}
