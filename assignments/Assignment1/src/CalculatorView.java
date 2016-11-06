@@ -118,6 +118,7 @@ public class CalculatorView extends JPanel{
         backspaceBtn.setBorder(new LineBorder(Color.RED));
         backspaceBtn.setContentAreaFilled(false); // transparent
         backspaceBtn.setPreferredSize(DIM_25);
+        backspaceBtn.setActionCommand("Backspace");
         backspaceBtn.setToolTipText("Backspace (Alt-B)");
         backspaceBtn.setMnemonic(KeyEvent.VK_B); // bind key combo Alt+B to this button
         backspaceBtn.addActionListener(handler);
@@ -160,10 +161,10 @@ public class CalculatorView extends JPanel{
             curRadio.setBackground(Color.YELLOW);
             curRadio.setOpaque(true);
             
-            String ac = (radioStr.equals("Sci")) ? radioStr : "0" + radioStr; // adds a 0 in front of strings that represent the .0 or .00 buttons
+            String ac = (radioStr.equals("Sci")) ? radioStr : "f" + radioStr; // adds a 0 in front of strings that represent the .0 or .00 buttons
             curRadio.setActionCommand(ac); // set ac
             curRadio.addActionListener(handler);
-            if (ac.equals("0.00")) { curRadio.setSelected(true); } // set the default radio that is checked on launch
+            if (ac.equals("f.00")) { curRadio.setSelected(true); } // set the default radio that is checked on launch
             
             // add radio to button group and modes container
             checkGroup.add(curRadio);
@@ -236,7 +237,9 @@ public class CalculatorView extends JPanel{
         // set back and foregrounds
         createdButton.setBackground(bg);
         createdButton.setForeground(fg);
-        
+        if(text.equals(PLUS_MINUS_CHAR)){
+            ac = "PLUS_MINUS_CHAR";
+        }
         if (ac != null){ createdButton.setActionCommand(ac); } // only set ation command if ac is not null
         
         createdButton.setFont(createdButton.getFont().deriveFont(20.0f)); // increase font size to 20
@@ -255,15 +258,51 @@ public class CalculatorView extends JPanel{
     */
     private class Controller implements ActionListener {
         
+        CalculatorModel calcModel = new CalculatorModel();
         /**
-        * Overrides ActionListener.actionPerformed(), sets calculator display text to action string.
+        * Overrides ActionListener.actionPerformed(), handles calculator action commands.
         * 
         * @param e ActionEvent that has occurred
         */
         @Override
         public void actionPerformed(ActionEvent e) { 
             String ac = e.getActionCommand(); // get action string
-            display.setText(ac); // set the display
+            System.out.println(ac);
+            switch(ac){
+                case "Int":
+                    calcModel.toggleCalcMode(error, dotButton);
+                    break;
+                case "f.00":
+                    calcModel.setFloatingPresision(2);
+                    break;
+                case "f.0":
+                    calcModel.setFloatingPresision(1);
+                    break;
+                case "Sci":
+                    calcModel.setFloatingPresision(3);
+                    break;
+                case "Backspace":
+                    calcModel.backspaceOperand();
+                    display.setText(calcModel.peekLastOperand());
+                    break;
+                case "PLUS_MINUS_CHAR":
+                    calcModel.invertResult();
+                    display.setText(calcModel.getResult(error));
+                    break;
+                case "C":
+                    calcModel.clearOperands(error);
+                    display.setText(calcModel.getResult(error));
+                    break;
+                case "=":
+                    calcModel.performCalculations();
+                    display.setText(calcModel.getResult(error)); // set the display
+                    break;
+                default:
+                    calcModel.addOperand(ac);
+                    display.setText(calcModel.peekLastOperand());
+                    break;
+            }
+            
         }
     }
 }
