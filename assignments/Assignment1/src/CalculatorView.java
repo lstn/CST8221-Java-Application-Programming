@@ -267,19 +267,18 @@ public class CalculatorView extends JPanel{
         @Override
         public void actionPerformed(ActionEvent e) { 
             String ac = e.getActionCommand(); // get action string
-            System.out.println(ac);
             switch(ac){
                 case "Int":
                     calcModel.toggleCalcMode(error, dotButton);
                     break;
                 case "f.00":
-                    calcModel.setFloatingPresision(2);
+                    calcModel.setFloatingPrecision(2);
                     break;
                 case "f.0":
-                    calcModel.setFloatingPresision(1);
+                    calcModel.setFloatingPrecision(1);
                     break;
                 case "Sci":
-                    calcModel.setFloatingPresision(3);
+                    calcModel.setFloatingPrecision(3);
                     break;
                 case "Backspace":
                     calcModel.backspaceOperand();
