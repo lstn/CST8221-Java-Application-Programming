@@ -1,3 +1,11 @@
+
+import java.awt.Color;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
 /**
  * Filename: ClientView.java
  * Author: Lucas Estienne, 040 819 959
@@ -11,6 +19,10 @@
 
 public class ClientView extends javax.swing.JFrame {
 
+    private Socket clientSocket;
+    private ObjectOutputStream sockOutput;
+    private ObjectInputStream sockInput;
+    
     /**
      * Creates new form ClientView
      */
@@ -19,6 +31,7 @@ public class ClientView extends javax.swing.JFrame {
         this.setSize(600+7, 550+7); 
         this.hostLabel.setLabelFor(this.hostTextField);
         this.portLabel.setLabelFor(this.portComboBox);
+        
     }
 
     /**
@@ -71,6 +84,7 @@ public class ClientView extends javax.swing.JFrame {
         hostTextField.setText("localhost");
 
         portComboBox.setBackground(new java.awt.Color(255, 255, 255));
+        portComboBox.setEditable(true);
         portComboBox.setForeground(new java.awt.Color(204, 204, 204));
         portComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "", "8088", "65000", "65535" }));
         portComboBox.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -86,6 +100,11 @@ public class ClientView extends javax.swing.JFrame {
         connectBtn.setMaximumSize(new java.awt.Dimension(60, 26));
         connectBtn.setMinimumSize(new java.awt.Dimension(60, 26));
         connectBtn.setPreferredSize(new java.awt.Dimension(60, 26));
+        connectBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                connectBtnActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout connectionPanelLayout = new javax.swing.GroupLayout(connectionPanel);
         connectionPanel.setLayout(connectionPanelLayout);
@@ -178,7 +197,7 @@ public class ClientView extends javax.swing.JFrame {
         );
         terminalPanelLayout.setVerticalGroup(
             terminalPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -192,22 +211,78 @@ public class ClientView extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(connectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(connectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(clientReqPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(clientReqPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(terminalPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(74, 74, 74))
+                .addGap(79, 79, 79))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
-        // TODO add your handling code here:
+        if(clientSocket != null && clientSocket.isConnected() && openIOStreams()){
+            try{
+                sockOutput.writeObject(reqTextField.getText());
+                while(true){
+                    String response = sockInput.readLine();
+                    if(response != null){
+                        System.err.println(response);
+                        break;
+                    }
+                }
+            } catch (IOException e){
+                System.err.println("Error trying to send command to server");
+                e.printStackTrace();
+            }
+        }
     }//GEN-LAST:event_sendBtnActionPerformed
 
+    private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
+        connectBtn.setBackground(Color.BLUE);
+        connectBtn.setEnabled(false);
+        sendBtn.setEnabled(false);
+        
+        try{
+            clientSocket = new Socket();
+            clientSocket.connect(new InetSocketAddress(
+                    hostTextField.getText(), 
+                    Integer.parseInt(portComboBox.getSelectedItem().toString())
+                ), 4500);
+            
+        } catch(IOException e) {
+            System.err.println("IO Except");
+            e.printStackTrace();
+        } finally {
+            if(!clientSocket.isConnected()){
+                connectBtn.setBackground(Color.RED);
+                connectBtn.setEnabled(true);
+                sendBtn.setEnabled(false);
+            } else {
+                sendBtn.setEnabled(true);
+            }
+        }
+    }//GEN-LAST:event_connectBtnActionPerformed
 
+    private boolean openIOStreams(){
+        if(clientSocket == null){
+            return false;
+        }
+        
+        try{
+            sockOutput = new ObjectOutputStream(clientSocket.getOutputStream());
+            sockInput = new ObjectInputStream(clientSocket.getInputStream());
+            return true;
+        } catch(IOException e){
+            System.err.println("Error opening input or output streams for connection");
+            e.printStackTrace();
+            //closeSocket();
+        }
+        return false;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel clientReqPanel;
     private javax.swing.JButton connectBtn;
