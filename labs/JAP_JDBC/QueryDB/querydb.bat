@@ -1,0 +1,1 @@
+java -cp .;"c:\Program Files\Java\jdk1.8.0_91\db\lib\derby.jar";"c:\Program Files\Java\jdk1.8.0_91\db\lib\derbyclient.jar"; QueryDB
