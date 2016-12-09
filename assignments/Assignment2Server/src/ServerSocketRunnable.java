@@ -42,7 +42,8 @@ public class ServerSocketRunnable implements Runnable {
         
         try {
             while(ssRunning){
-                inputCommand = sockInput.readLine();
+                inputCommand = (String) sockInput.readObject();//sockInput.readLine();
+                //System.err.println(inputCommand);
                 command = getInputCommand(inputCommand);
                 switch(command[0]){
                     case "quit":
@@ -60,7 +61,7 @@ public class ServerSocketRunnable implements Runnable {
                         sockOutput.writeObject("DATE: " + dateFormatter.format(LocalDateTime.now()));
                         break;
                     case "help":
-                        sockOutput.writeObject("Available Services:\nquit\necho\ntime\ndate\nhelp\ncls");
+                        sockOutput.writeObject("Available Services:\nquit\necho\ntime\ndate\nhelp\ncls\n\n");
                         break;
                     case "cls":
                         sockOutput.writeObject("cls");
@@ -79,6 +80,9 @@ public class ServerSocketRunnable implements Runnable {
             e.printStackTrace();
         } catch (InterruptedException e) {
             System.err.println("Socket interrupted during sleep wait");
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            System.err.println("Could not find class");
             e.printStackTrace();
         }
  
@@ -137,6 +141,10 @@ public class ServerSocketRunnable implements Runnable {
     }
     
     private boolean openIOStreams(){
+        if(sockOutput != null || sockInput != null){
+            return true;
+        }
+        
         try{
             sockOutput = new ObjectOutputStream(socket.getOutputStream());
             sockInput = new ObjectInputStream(socket.getInputStream());
@@ -147,6 +155,21 @@ public class ServerSocketRunnable implements Runnable {
             closeSocket();
         }
         return false;
+    }
+    
+    private void tryCloseIOStreams(){
+        if (sockOutput != null && sockInput != null){
+            try{
+                sockInput.close();
+                sockOutput.close();
+            } catch(IOException e) {
+                System.err.println("IOExcept tryclose");
+                e.printStackTrace();
+            } finally {
+                sockInput = null;
+                sockOutput = null;
+            }
+        }
     }
     
     private void closeSocket(){
