@@ -1,3 +1,13 @@
+/**
+ * Filename: ClientView.java
+ * Author: Lucas Estienne, 040 819 959
+ * Course: CST8221 - JAP, Lab Section: 302
+ * Assignment: 2
+ * Date: 12/8/2016
+ * Professor: Svillen Ranev
+ * Purpose: Responsible for building the client GUI and handling the client socket connection.
+ * Class list: ClientView, SwingWorkerRunnable
+ */
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -10,56 +20,74 @@ import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- * Filename: ClientView.java
- * Author: Lucas Estienne, 040 819 959
- * Course: CST8221 - JAP, Lab Section: 302
- * Assignment: 2
- * Date: 11/30/2016
- * Professor: Svillen Ranev
- * Purpose: Responsible for building the client GUI.
- * Class list: ClientView
- */
-
+ * This class is responsible for launching the Client application and handling the client thread & connections.
+ * 
+ * @author Lucas Estienne
+ * @version 1.0
+ * @see javax.swing.JFrame
+ * @since 1.8.0_112
+*/
 public class ClientView extends javax.swing.JFrame {
-    
+    /**
+     * Default timeout, in milliseconds, for a socket connection attempt. Value: {@value}
+     */
     private static final int DEFAULT_CONNECT_TIMEOUT = 4500; // milliseconds
 
+    /**
+     * the Socket object for our client
+     */
     private Socket clientSocket;
+    /**
+     * the output stream for our client
+     */
     private ObjectOutputStream sockOutput;
+    /**
+     * the input stream for our client
+     */
     private ObjectInputStream sockInput;
+    /**
+     * the Thread which manages the client connection
+     */
     private Thread clientListener;
+    /**
+     * whether or not the thread should currently be running
+     */
     private boolean isThreadRunning = false;
     
     /**
-     * Creates new form ClientView
-     */
+     * Default constructor for the ClientView class.
+     * Builds a Client GUI and spawns a Thread to manage the client connections.
+    */
     public ClientView() {
+        // initialize the client view
         initComponents();
         this.setSize(600+7, 550+7); 
         this.hostLabel.setLabelFor(this.hostTextField);
         this.portLabel.setLabelFor(this.portComboBox);
         
+        // initialize our Thread
         clientListener = new Thread(new SwingWorkerRunnable());
+        
+        // add listener to window close so that we can close our streams, our connection and kill our thread
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent evt) {
+                isThreadRunning = false;
                 tryCloseIOStreams();
                 if (clientSocket != null && clientSocket.isConnected()){
                     try{
-                        isThreadRunning = false;
                         clientSocket.close();
                     } catch (IOException e) {
-                        System.err.println("IO Except");
+                        System.err.println("IO Exception on window close");
                         e.printStackTrace();
                     }
                 }
             }
         });
         
+        // start thread
         isThreadRunning = true;
         clientListener.start();
     }
@@ -251,6 +279,11 @@ public class ClientView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * This method sends commands to the server every time the `send` button is interacted with.
+     * 
+     * @param evt ActionEvent the event that triggered this method
+    */
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
         if(clientSocket != null && clientSocket.isConnected() && openIOStreams()){
             try{
@@ -262,7 +295,15 @@ public class ClientView extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_sendBtnActionPerformed
 
+    /**
+     * This method attempts to connect to a server using user-input fields whenever the `connect` button is pressed.
+     * If the connection is successful, the `connect` button is disabled and colored blue, while the `send` button becomes enabled.
+     * Otherwise, the `connect` button becomes enabled again and `send` stays disabled.
+     * 
+     * @param evt ActionEvent the event that triggered this method
+    */
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
+        // disable connect button as well as send button
         connectBtn.setBackground(Color.BLUE);
         connectBtn.setEnabled(false);
         sendBtn.setEnabled(false);
@@ -271,57 +312,75 @@ public class ClientView extends javax.swing.JFrame {
             clientSocket = new Socket();
             clientSocket.connect(new InetSocketAddress(
                     hostTextField.getText(), 
-                    Integer.parseInt(portComboBox.getSelectedItem().toString())
-                    ), DEFAULT_CONNECT_TIMEOUT);
+                    Integer.parseInt(portComboBox.getSelectedItem().toString()) // parse the combo box
+                    ), DEFAULT_CONNECT_TIMEOUT); // timeout if connection can't be established
             if(clientSocket.isConnected()){
                 terminalTextArea.append("Connected to " + clientSocket.toString() + "\n");
             }
             
-        } catch(UnknownHostException e) {
+        } catch(UnknownHostException e) { // host input doesn't exist, i.e. "localhost1111"
             clientMsgToTerminal("ERROR: Unknown Host");
             
-            System.err.println("Unknown Host Exception");
+            System.err.println("Unknown Host Exception caught");
             e.printStackTrace();
-        } catch(ConnectException e) {
+        } catch(ConnectException e) { // port is busy or server is not running
             clientMsgToTerminal("ERROR: Connection refused: server is not available. Check port or restart server.");
             
-            System.err.println("Connect Exception caught - ");
+            System.err.println("Connect Exception caught");
             e.printStackTrace();
         } catch(IOException e) {
             System.err.println("IO Exception while trying to connect");
             e.printStackTrace();
         } finally {
             if(!clientSocket.isConnected()){
+                // re-enable connect button, keep send button disabled
                 connectBtn.setBackground(Color.RED);
                 connectBtn.setEnabled(true);
                 sendBtn.setEnabled(false);
             } else {
+                // keep connect button disabled, enable send button
                 sendBtn.setEnabled(true);
             }
         }
     }//GEN-LAST:event_connectBtnActionPerformed
 
+    /**
+     * This method logs a message in the terminal text area and marks it as being from the client.
+     * 
+     * @param message String the message to be passed to the terminal
+    */
     private void clientMsgToTerminal(String message){
         terminalTextArea.append("CLIENT>" + message + "\n");
     }
     
+    /**
+     * This method logs a message in the terminal text area and marks it as being from the server.
+     * 
+     * @param message String the message to be passed to the terminal
+    */
     private void serverMsgToTerminal(String message){
         terminalTextArea.append("SERVER>" + message + "\n");
     }
     
-    
+    /**
+     * This method attempts to open an ObjectOutputStream & ObjectInputStream to act as
+     * input/output for our client.
+     * 
+     * @return boolean true if successful false if not
+    */
     private boolean openIOStreams(){
-        if(clientSocket == null || clientSocket.isClosed()){
+        if(clientSocket == null || clientSocket.isClosed()){ // fail if clientsocket isn't connected
             return false;
         }
-        if(sockOutput != null || sockInput != null){
+        if(sockOutput != null && sockInput != null){ // if output and input aren't null then return success
             return true;
         }
         
         try{
+            // initialize input and output
             sockOutput = new ObjectOutputStream(clientSocket.getOutputStream());
             sockInput = new ObjectInputStream(clientSocket.getInputStream());
-            return true;
+            return true; // success
         } catch(IOException e){
             System.err.println("Error opening input or output streams for connection");
             e.printStackTrace();
@@ -330,6 +389,9 @@ public class ClientView extends javax.swing.JFrame {
         return false;
     }
     
+    /**
+     * This method tries to close and null the input and output streams if they are not null.
+    */
     private void tryCloseIOStreams(){
         if (sockOutput != null && sockInput != null){
             try{
@@ -360,60 +422,59 @@ public class ClientView extends javax.swing.JFrame {
     private javax.swing.JTextArea terminalTextArea;
     // End of variables declaration//GEN-END:variables
 
+    /**
+    * This class implements Runnable and acts as a listener for receiving messages from the server.
+    * 
+    * @author Lucas Estienne
+    * @version 1.0
+    * @see Runnable
+    * @since 1.8.0_112
+    */
     private class SwingWorkerRunnable implements Runnable{
         
+        /**
+        * Overrides Runnable.run and begins running in a loop listening for & handling server messages
+        * until we kill the loop by flipping isThreadRunning to false.
+        */
         @Override
         public void run() {
             try{
                 while (isThreadRunning){
                     if(clientSocket == null || sockInput == null || sockOutput == null || clientSocket.isClosed()){
-                        Thread.sleep(350);
+                        Thread.sleep(350); // socket or streams aren't fully initialized yet, sleep for 350 ms
                     } else {
-                        String incoming = (String) sockInput.readObject();
+                        String incoming = (String) sockInput.readObject(); // attempt to read incoming message from server
                         
-                        if(incoming.length() >= 3 && incoming.substring(0, 3).equals("cls")){
-                            EventQueue.invokeLater(new Runnable(){
-                                @Override
-                                public void run(){
-                                    terminalTextArea.setText("");
-                                }
-                            }); 
+                        if(incoming.length() == 3 && incoming.substring(0, 3).equals("cls")){ // command to clear terminal
+                            EventQueue.invokeLater(() -> {terminalTextArea.setText("");});  // lambda runnable.run() to be invoked in event dispatch thread.
+                            
                         } else if (incoming.startsWith("Available Services:") 
                                 || incoming.startsWith("ERROR:") || incoming.startsWith("ECHO: ")
                                 || incoming.startsWith("TIME: ") || incoming.startsWith("DATE: ")
                                 ){
-                            EventQueue.invokeLater(new Runnable(){
-                                @Override
-                                public void run(){
-                                    serverMsgToTerminal(incoming);
-                                }
-                            }); 
-                        } else if (incoming.startsWith("Connection closed")){
-                            EventQueue.invokeLater(new Runnable(){
-                                @Override
-                                public void run(){
-                                    serverMsgToTerminal(incoming);
-                                    try {
-                                        tryCloseIOStreams();
-                                        clientSocket.close();
-                                    } catch (IOException e) {
-                                        System.err.println("IO Exception while closing client socket");
-                                        e.printStackTrace();
-                                    } finally {
-                                        clientMsgToTerminal("Connection closed.");
-                                        connectBtn.setBackground(Color.RED);
-                                        connectBtn.setEnabled(true);
-                                        sendBtn.setEnabled(false);
-                                    }
+                            
+                            EventQueue.invokeLater(() -> {serverMsgToTerminal(incoming);}); // lambda runnable.run() to be invoked in event dispatch thread.
+                            
+                        } else if (incoming.startsWith("Connection closed")){ // server closed socket, so we close ours
+                            EventQueue.invokeLater(() -> { // lambda runnable.run() to be invoked in event dispatch thread.
+                                serverMsgToTerminal(incoming);
+                                try {
+                                    tryCloseIOStreams(); // attempt to close IO streams
+                                    clientSocket.close(); // attempt to close socket 
+                                } catch (IOException e) {
+                                    System.err.println("IO Exception while closing client socket");
+                                    e.printStackTrace();
+                                } finally {
+                                    clientMsgToTerminal("Connection closed.");
+                                    
+                                    // enables connect button again, sets it to red, and disables send button.
+                                    connectBtn.setBackground(Color.RED);
+                                    connectBtn.setEnabled(true);
+                                    sendBtn.setEnabled(false);
                                 }
                             }); 
                         } else {
-                            EventQueue.invokeLater(new Runnable(){
-                                @Override
-                                public void run(){
-                                    serverMsgToTerminal("ERROR: Unrecognized command.");
-                                }
-                            });
+                            EventQueue.invokeLater(() -> {serverMsgToTerminal("ERROR: Unrecognized command.");}); // lambda runnable.run() to be invoked in event dispatch thread.
                         }
                         
                         Thread.sleep(1);
